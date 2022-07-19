@@ -8,11 +8,11 @@ RANDOM.ORG offers true random numbers to anyone on the Internet. The randomness 
 
 ### Install
 
-'''bash
+```bash
 git clone https://github.com/rbjnazz/ro-cli
 cd ro-cli
 pip install -r requirements.txt
-'''
+```
 
 ### Currently supported services
 
