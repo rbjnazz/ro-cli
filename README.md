@@ -1,4 +1,4 @@
-# roc-cli
+# ro-cli
 
 A cli to generate true random numbers using random.org
 
