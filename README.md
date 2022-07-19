@@ -22,6 +22,6 @@ pip install -r requirements.txt
 
 ### Usage
 
-'''bash
+```bash
 python3 ro-cli.py
-'''
+```
