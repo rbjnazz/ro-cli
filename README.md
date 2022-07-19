@@ -9,7 +9,9 @@ RANDOM.ORG offers true random numbers to anyone on the Internet. The randomness 
 ### Install
 
 '''bash
-
+git clone https://github.com/rbjnazz/ro-cli
+cd ro-cli
+pip install -r requirements.txt
 '''
 
 ### Currently supported services
@@ -17,3 +19,9 @@ RANDOM.ORG offers true random numbers to anyone on the Internet. The randomness 
 - Integers
 - Sequences
 - Integer sets
+
+### Usage
+
+'''bash
+python3 ro-cli.py
+'''
