@@ -146,8 +146,8 @@ def read_settings():
         write_settings()
 
 
-def start(rsp):
-    p = rsp
+def start(params):
+    p = params
     try:
         if p[0] == 'integers':
             intr = rand_int(p[0], p[1], p[2], p[3], p[4], p[5])
@@ -176,8 +176,8 @@ while __name__ == '__main__':
         print('Quit!')
         exit()
     elif usr_input == "":
-        x = start(rs)
-        print(f'\nResult:\n\n{x}')
+        get_random = start(rs)
+        print(f'\nResult:\n\n{get_random}')
     else:
         print('Unknown command!')
         help()
