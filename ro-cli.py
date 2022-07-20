@@ -37,7 +37,7 @@ def help():
     print(help_text)
 
 
-def int_parser(types, a, b, c, d, e):
+def rand_int(types, a, b, c, d, e):
     url = f'https://www.random.org/{types}/?num={a}&min={b}&max={c}&col={d}&base={e}&format=html&rnd=new'
     try:
         req_result = requests.get(url)
@@ -48,7 +48,7 @@ def int_parser(types, a, b, c, d, e):
         exit()
 
 
-def seq_parser(types, a, b, c):
+def rand_seq(types, a, b, c):
     url = f'https://www.random.org/{types}/?min={a}&max={b}&col={c}&format=html&rnd=new'
     try:
         req_result = requests.get(url)
@@ -59,7 +59,7 @@ def seq_parser(types, a, b, c):
         exit()
 
 
-def set_parser(types, a, b, c, d):
+def rand_sets(types, a, b, c, d):
     url = f'https://www.random.org/{types}/?sets={a}&num={b}&min={c}&max={d}&seqnos=on&sort=on&order=index&format=html&rnd=new'
     try:
         req_result = requests.get(url)
@@ -143,13 +143,13 @@ def start(rsp):
     p = rsp
     try:
         if p[0] == 'integers':
-            intr = int_parser(p[0], p[1], p[2], p[3], p[4], p[5])
+            intr = rand_int(p[0], p[1], p[2], p[3], p[4], p[5])
             return intr
         elif p[0] == 'sequences':
-            seqr = seq_parser(p[0], p[1], p[2], p[3])
+            seqr = rand_seq(p[0], p[1], p[2], p[3])
             return seqr
         elif p[0] == 'integer-sets':
-            setsr = set_parser(p[0], p[1], p[2], p[3], p[4])
+            setsr = rand_sets(p[0], p[1], p[2], p[3], p[4])
             return setsr
     except Exception as e:
         print('some error occured!\n', e)
