@@ -37,78 +37,85 @@ def help():
     print(help_text)
 
 
+class Parser:
+    site = 'https://www.random.org/'
+
+    def __init__(self, url, cls_data=False):
+        self.url = self.site + url
+        self.cls_data = cls_data
+
+    def parse(self, tag):
+        try:
+            req = requests.get(self.url)
+            ro = BeautifulSoup(req.text, 'html.parser')
+            if not self.cls_data:
+                return ro.find(tag).string
+            else:
+                result = ''
+                for li in ro.select(tag):
+                    result += li.get_text()
+                return result
+        except requests.ConnectionError as e:
+            print(f'No internet connection!\n\n{e}')
+            exit()
+
+
 def rand_int(types, a, b, c, d, e):
-    url = f'https://www.random.org/{types}/?num={a}&min={b}&max={c}&col={d}&base={e}&format=html&rnd=new'
-    try:
-        req_result = requests.get(url)
-        random_org = BeautifulSoup(req_result.text, 'html.parser')
-        return random_org.find('pre').string
-    except requests.ConnectionError as e:
-        print(f'No internet connection!\n\n{e}')
-        exit()
+    url = f'{types}/?num={a}&min={b}&max={c}&col={d}&base={e}&format=html&rnd=new'
+    result = Parser(url).parse('pre')
+    return result
 
 
 def rand_seq(types, a, b, c):
-    url = f'https://www.random.org/{types}/?min={a}&max={b}&col={c}&format=html&rnd=new'
-    try:
-        req_result = requests.get(url)
-        random_org = BeautifulSoup(req_result.text, 'html.parser')
-        return random_org.find('pre').string
-    except requests.ConnectionError as e:
-        print(f'No internet connection!\n\n{e}')
-        exit()
+    url = f'{types}/?min={a}&max={b}&col={c}&format=html&rnd=new'
+    result = Parser(url).parse('pre')
+    return result
 
 
 def rand_sets(types, a, b, c, d):
-    url = f'https://www.random.org/{types}/?sets={a}&num={b}&min={c}&max={d}&seqnos=on&sort=on&order=index&format=html&rnd=new'
-    try:
-        req_result = requests.get(url)
-        random_org = BeautifulSoup(req_result.text, 'html.parser')
-        data = random_org.find(class_='data')
-        result = ''
-        for i in data.find_all('li'):
-            result += i.string + '\n'
-        return result
-    except requests.ConnectionError as e:
-        print(f'No internet connection!\n\n{e}')
-        exit()
+    url = f'{types}/?sets={a}&num={b}&min={c}&max={d}&seqnos=on&sort=on&order=index&format=html&rnd=new'
+    result = Parser(url, True).parse('ul.data')
+    return result
+
+
+def usr_in(string):
+    usr = int(input(string))
+    return usr
 
 
 def write_settings():
     default = [TYPE[0], 1, 1, 100, 1, 10]
     with open('settings.txt', mode='w', encoding='utf-8') as file:
         try:
-            types = int(input('Type: '))
+            types = usr_in('Type: ')
             if types == 0:
-                count = int(input('Count: '))
-                min = int(input('Min: '))
-                max = int(input('Max: '))
-                col = int(input('Column: '))
-                base = int(input('Base: '))
-                params = [TYPE[types], count, min, max, col, base]
-                for i in params:
-                    file.writelines(f'{i}\n')
+                prompts = [
+                'Count: ', 'Min: ', 'Max: ',
+                'Column: ', 'Base (2 8 10 16): '
+                ]
+                params = [TYPE[types]]
+                for i in prompts:
+                    params.append(usr_in(i))
+                file.writelines(f'{i}\n' for i in params)
             elif types == 1:
-                min = int(input('Min: '))
-                max = int(input('Max: '))
-                col = int(input('Column: '))
-                params = [TYPE[types], min, max, col]
-                for i in params:
-                    file.writelines(f'{i}\n')
+                prompts = ['Min: ', 'Max: ','Column: ']
+                params = [TYPE[types]]
+                for i in prompts:
+                    params.append(usr_in(i))
+                file.writelines(f'{i}\n' for i in params)
             elif types == 2:
-                count = int(input('Count: '))
-                length = int(input('Length: '))
-                min = int(input('Min: '))
-                max = int(input('Max: '))
-                params = [TYPE[types], count, length, min, max]
-                for i in params:
-                    file.writelines(f'{i}\n')
+                prompts = [
+                'Count: ', 'Length: ',
+                'Min: ', 'Max: '
+                ]
+                params = [TYPE[types]]
+                for i in prompts:
+                    params.append(usr_in(i))
+                file.writelines(f'{i}\n' for i in params)
             else:
-                for i in default:
-                    file.writelines(f'{i}\n')
+                file.writelines(f'{i}\n' for i in default)
         except Exception as e:
-            for i in default:
-                file.writelines(f'{i}\n')
+            file.writelines(f'{i}\n' for i in default)
             clear_terminal()
             print(f'Imvalid character!\nError: {e}')
             print(f'''
@@ -152,7 +159,7 @@ def start(rsp):
             setsr = rand_sets(p[0], p[1], p[2], p[3], p[4])
             return setsr
     except Exception as e:
-        print('some error occured!\n', e)
+        print('Some error occured! Try different settings...\n', e)
         exit()
 
 
