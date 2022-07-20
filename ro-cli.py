@@ -117,7 +117,7 @@ def write_settings():
         except Exception as e:
             file.writelines(f'{i}\n' for i in default)
             clear_terminal()
-            print(f'Imvalid character!\nError: {e}')
+            print(f'Invalid character!\nError: {e}')
             print(f'''
     Default settings will be used:
     Type: 0 {default[0]}
