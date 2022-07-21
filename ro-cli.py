@@ -104,7 +104,7 @@ def usr_in(string, digit=True):
             print('Quit!')
             exit()
         elif usr == "":
-            get_random = start(rs)
+            get_random = start()
             print(f'\nResult:\n\n{get_random}')
         else:
             print(message(3), message(0))
@@ -167,8 +167,8 @@ def read_settings():
         write_settings()
 
 
-def start(params):
-    p = params
+def start():
+    p = read_settings()
     try:
         if p[0] == 'integers':
             intr = rand_int(p[0], p[1], p[2], p[3], p[4], p[5])
