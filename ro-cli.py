@@ -1,5 +1,5 @@
-from bs4 import BeautifulSoup
 import requests
+from bs4 import BeautifulSoup
 from os import system, name
 
 
@@ -13,8 +13,8 @@ def clear_terminal():
         system('clear')
 
 
-def help():
-    help_text = '''
+def message(msg=None, error=None, default=None):
+    help_msg = '''
     Type S for settings, H for help, Q to quit, hit ENTER to start:
 
     ABOUT SETTINGS:
@@ -34,7 +34,21 @@ def help():
     Column - Number of columns (output).
     Base - 2 Binary, 8 Octal, 10 Decimal, 16 Hexadecimal
     '''
-    print(help_text)
+    err1 = 'Invalid character!\n'
+    err2 = 'Some error occured! Try different settings...\n'
+    defaults = ['Type: 0 ', 'Count: ', 'Min: ',
+    'Max:', 'Col: ', 'Base: ']
+    def_msg = f'{err1}{error}\n\nDefault settings will be used:\n'
+    if msg == 0:
+        return help_msg
+    elif msg == 1:
+        return f'{err2} {error}'
+    elif msg == 2:
+        for d, i in zip(default, range(0,6)):
+            def_msg += f'{defaults[i]}{default[i]}\n'
+        return def_msg
+    else:
+        return err1
 
 
 class Parser:
@@ -78,9 +92,25 @@ def rand_sets(types, a, b, c, d):
     return result
 
 
-def usr_in(string):
-    usr = int(input(string))
-    return usr
+def usr_in(string, digit=True):
+    if not digit:
+        usr = input(string)
+        clear_terminal()
+        if usr.upper() == "S":
+            write_settings()
+        elif usr.upper() == "H":
+            print(message(0))
+        elif usr.upper() == "Q":
+            print('Quit!')
+            exit()
+        elif usr == "":
+            get_random = start(rs)
+            print(f'\nResult:\n\n{get_random}')
+        else:
+            print(message(3), message(0))
+    else:
+        usr = int(input(string))
+        return usr
 
 
 def write_settings():
@@ -117,16 +147,7 @@ def write_settings():
         except Exception as e:
             file.writelines(f'{i}\n' for i in default)
             clear_terminal()
-            print(f'Invalid character!\nError: {e}')
-            print(f'''
-    Default settings will be used:
-    Type: 0 {default[0]}
-    Count: {default[1]}
-    Min: {default[2]}
-    Max: {default[3]}
-    Col: {default[4]}
-    Base: {default[5]}
-    ''')
+            print(message(2, e, default))
 
 
 def read_settings():
@@ -159,25 +180,13 @@ def start(params):
             setsr = rand_sets(p[0], p[1], p[2], p[3], p[4])
             return setsr
     except Exception as e:
-        print('Some error occured! Try different settings...\n', e)
-        exit()
+        print(message(1, e))
+        write_settings()
+        return 'please hit enter again'
 
 
 while __name__ == '__main__':
     read_settings()
     rs = read_settings()
-    usr_input = input(f'\nRANDOM-ORG-CLI {rs[0]} >>> ')
-    clear_terminal()
-    if usr_input.upper() == "S":
-        write_settings()
-    elif usr_input.upper() == "H":
-        help()
-    elif usr_input.upper() == "Q":
-        print('Quit!')
-        exit()
-    elif usr_input == "":
-        get_random = start(rs)
-        print(f'\nResult:\n\n{get_random}')
-    else:
-        print('Unknown command!')
-        help()
+    usr_in(f'\nRANDOM-ORG-CLI {rs[0]} >>> ', False)
+
