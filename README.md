@@ -9,7 +9,7 @@ RANDOM.ORG offers true random numbers to anyone on the Internet. The randomness 
 ### Install
 
 ```bash
-git clone https://github.com/rbjnazz/ro-cli
+git clone https://github.com/rbjnazz/ro-cli.git
 cd ro-cli
 pip install -r requirements.txt
 ```
@@ -23,5 +23,5 @@ pip install -r requirements.txt
 ### Usage
 
 ```bash
-python3 ro-cli.py
+python ro-cli.py
 ```
