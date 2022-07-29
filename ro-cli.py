@@ -1,9 +1,12 @@
+#!/usr/bin/env python
 import requests
 from bs4 import BeautifulSoup
 from os import system, name
+from rich.console import Console
 
 
 TYPE = ['integers', 'sequences', 'integer-sets']
+CONSOLE = Console()
 
 
 def clear_terminal():
@@ -70,7 +73,7 @@ class Parser:
                     result += li.get_text()
                 return result
         except requests.ConnectionError as e:
-            print(f'No internet connection!\n\n{e}')
+            CONSOLE.print(f'No internet connection!\n\n{e}', style='#ED0800')
             exit()
 
 
@@ -99,15 +102,16 @@ def usr_in(string, digit=True):
         if usr.upper() == "S":
             write_settings()
         elif usr.upper() == "H":
-            print(message(0))
+            CONSOLE.print(message(0), style='#F4A460')
         elif usr.upper() == "Q":
             print('Quit!')
             exit()
         elif usr == "":
-            get_random = start()
-            print(f'\nResult:\n\n{get_random}')
+            with CONSOLE.status('[bold #FFC0CB]Getting data from random.org', spinner='material') as status:
+                get_random = start()
+                CONSOLE.print(f'[bold blue]\nResult:[/]\n\n[green]{get_random}')
         else:
-            print(message(3), message(0))
+            CONSOLE.print(f'[bold #ED0800]{message(3)}[/]', message(0), style='#F4A460')
     else:
         usr = int(input(string))
         return usr
@@ -144,10 +148,11 @@ def write_settings():
                 file.writelines(f'{i}\n' for i in params)
             else:
                 file.writelines(f'{i}\n' for i in default)
+                CONSOLE.print('[bold #ED0800]Type out of range![/]\n', message(0), style='#F4A460')
         except Exception as e:
             file.writelines(f'{i}\n' for i in default)
             clear_terminal()
-            print(message(2, e, default))
+            CONSOLE.print(message(2, e, default), style='#FFE900')
 
 
 def read_settings():
@@ -180,7 +185,7 @@ def start():
             setsr = rand_sets(p[0], p[1], p[2], p[3], p[4])
             return setsr
     except Exception as e:
-        print(message(1, e))
+        CONSOLE.print(message(1, e), style='red')
         write_settings()
         return 'please hit enter again'
 
