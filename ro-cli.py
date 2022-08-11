@@ -42,10 +42,10 @@ def message(msg=None, error=None, default=None):
     Base - 2 Binary, 8 Octal, 10 Decimal, 16 Hexadecimal
     '''
     err1 = 'Invalid character!\n'
-    err2 = 'Some error occured!\n Try different configuration or use valid base number [2|8|10|16].\n'
-    defaults = ['Type: 0 ', 'Count: ', 'Min: ',
-    'Max:', 'Col: ', 'Base: ']
-    defaults = f'{error}\nPress H for help...\n\nDefault configuration will be used:\n'
+    err2 = 'Some error occured!\nTry different configuration \
+            or use valid base number [2|8|10|16].\n'
+    defaults = (f'{error}\nPress H for help...\n\n'
+                'Default configuration will be used:\n')
     if msg == 0:
         return Panel.fit(help_msg, title='HELP', style='#F4A460', padding=2)
     elif msg == 1:
@@ -76,12 +76,15 @@ class Parser:
                     result += li.get_text()
                 return result
         except requests.ConnectionError as e:
-            CONSOLE.print(Panel.fit(f'[bold red]No internet connection!\n\n{e}', title='CONNECTION ERROR!'))
+            CONSOLE.print(Panel.fit(
+                f'[bold red]No internet connection!\n\n{e}',
+                title='CONNECTION ERROR!'))
             exit()
 
 
 def rand_int(types, a, b, c, d, e):
-    url = f'{types}/?num={a}&min={b}&max={c}&col={d}&base={e}&format=html&rnd=new'
+    url = f'{types}/?num={a}&min={b}&max={c}' \
+            f'&col={d}&base={e}&format=html&rnd=new'
     result = Parser(url).parse('pre')
     return result
 
@@ -93,38 +96,48 @@ def rand_seq(types, a, b, c):
 
 
 def rand_sets(types, a, b, c, d):
-    url = f'{types}/?sets={a}&num={b}&min={c}&max={d}&seqnos=on&sort=on&order=index&format=html&rnd=new'
+    url = f'{types}/?sets={a}&num={b}&min={c}&max={d}' \
+            '&seqnos=on&sort=on&order=index&format=html&rnd=new'
     result = Parser(url, True).parse('ul.data')
     return result
 
 
 def usr_in(string, digit=True):
-    if not digit:
-        usr = input(string)
-        clear_terminal()
-        if usr.upper() == "S":
-            write_settings()
-        elif usr.upper() == "H":
-            CONSOLE.print(message(0))
-        elif usr.upper() == "Q":
-            exit()
-        elif usr == "":
-            with CONSOLE.status('[bold #FFC0CB]Getting data from random.org', spinner='dots2', speed=3.0):
-                get_random = generate_random()
-                CONSOLE.print(f'[bold cyan]RESULT:\n[yellow]{get_random}')
+    try:
+        if not digit:
+            usr = input(string)
+            clear_terminal()
+            if usr.upper() == "S":
+                write_settings()
+            elif usr.upper() == "H":
+                CONSOLE.print(message(0))
+            elif usr.upper() == "Q":
+                exit()
+            elif usr == "":
+                with CONSOLE.status(
+                        '[bold #FFC0CB]Getting data from random.org',
+                        spinner='dots2', speed=3.0):
+                    get_random = generate_random()
+                    CONSOLE.print(f'[bold cyan]RESULT:\n[yellow]{get_random}')
+            else:
+                CONSOLE.print(message(3), style='red')
+                CONSOLE.print(message(0), style='#F4A460')
         else:
-            CONSOLE.print(message(3), style='red')
-            CONSOLE.print(message(0), style='#F4A460')
-    else:
-        usr = int(input(f'{string}: '))
-        return usr
+            usr = int(input(f'{string}: '))
+            return usr
+    except KeyboardInterrupt:
+        exit()
 
 
 def write_settings():
     default = {
             'Config': {
-                'Type': TYPE[0], 'Count': 1, 'Min': 1,
-                'Max': 100, 'Column': 1, 'Base': 10
+                'Type': TYPE[0],
+                'Count': 1,
+                'Min': 1,
+                'Max': 100,
+                'Column': 1,
+                'Base': 10
                 }
             }
     with open(DIR.parent / 'config.yaml', 'w') as file:
@@ -132,29 +145,23 @@ def write_settings():
             types = usr_in('Type')
             params = {'Config': {'Type': TYPE[types]}}
             if types == 0:
-                prompts = [
-                'Count', 'Min', 'Max',
-                'Column', 'Base'
-                ]
+                prompts = ['Count', 'Min', 'Max', 'Column', 'Base']
                 for i in prompts:
                     params['Config'][i] = usr_in(i)
                 yaml.dump(params, file, sort_keys=False)
             elif types == 1:
-                prompts = ['Min', 'Max','Column']
+                prompts = ['Min', 'Max', 'Column']
                 for i in prompts:
                     params['Config'][i] = usr_in(i)
                 yaml.dump(params, file, sort_keys=False)
             elif types == 2:
-                prompts = [
-                'Count', 'Length',
-                'Min', 'Max'
-                ]
+                prompts = ['Count', 'Length', 'Min', 'Max']
                 for i in prompts:
                     params['Config'][i] = usr_in(i)
                 yaml.dump(params, file, sort_keys=False)
             else:
                 yaml.dump(default, file, sort_keys=False)
-                CONSOLE.print(f'[bold red]Type out of range!\n', message(0))
+                CONSOLE.print('[bold red]Type out of range!\n', message(0))
         except Exception as e:
             yaml.dump(default, file, sort_keys=False)
             clear_terminal()
@@ -190,5 +197,5 @@ def generate_random():
 while __name__ == '__main__':
     read_settings()
     rs = read_settings()
-    usr_in(f'\nRANDOM \033[1;33m{rs[0].upper()} \033[1;37m>>> ', False)
-
+    CONSOLE.print(f'\n[b cyan]RANDOM[/] [b yellow]{rs[0].upper()}', end='')
+    usr_in(': ', False)
