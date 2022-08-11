@@ -1,12 +1,16 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import requests
+import yaml
+from pathlib import Path
 from bs4 import BeautifulSoup
 from os import system, name
 from rich.console import Console
+from rich.panel import Panel
 
 
 TYPE = ['integers', 'sequences', 'integer-sets']
 CONSOLE = Console()
+DIR = Path(__file__)
 
 
 def clear_terminal():
@@ -38,18 +42,17 @@ def message(msg=None, error=None, default=None):
     Base - 2 Binary, 8 Octal, 10 Decimal, 16 Hexadecimal
     '''
     err1 = 'Invalid character!\n'
-    err2 = 'Some error occured! Try different settings...\n'
+    err2 = 'Some error occured!\n Try different configuration or use valid base number [2|8|10|16].\n'
     defaults = ['Type: 0 ', 'Count: ', 'Min: ',
     'Max:', 'Col: ', 'Base: ']
-    def_msg = f'{err1}{error}\n\nDefault settings will be used:\n'
+    defaults = f'{error}\nPress H for help...\n\nDefault configuration will be used:\n'
     if msg == 0:
-        return help_msg
+        return Panel.fit(help_msg, title='HELP', style='#F4A460', padding=2)
     elif msg == 1:
-        return f'{err2} {error}'
+        return Panel.fit(f'{err2} {error}', title='ERROR!', padding=2)
     elif msg == 2:
-        for d, i in zip(default, range(0,6)):
-            def_msg += f'{defaults[i]}{default[i]}\n'
-        return def_msg
+        defaults += yaml.dump(default, sort_keys=False)
+        return Panel.fit(defaults, title='Default Settings', padding=2)
     else:
         return err1
 
@@ -73,7 +76,7 @@ class Parser:
                     result += li.get_text()
                 return result
         except requests.ConnectionError as e:
-            CONSOLE.print(f'No internet connection!\n\n{e}', style='#ED0800')
+            CONSOLE.print(Panel.fit(f'[bold red]No internet connection!\n\n{e}', title='CONNECTION ERROR!'))
             exit()
 
 
@@ -102,77 +105,72 @@ def usr_in(string, digit=True):
         if usr.upper() == "S":
             write_settings()
         elif usr.upper() == "H":
-            CONSOLE.print(message(0), style='#F4A460')
+            CONSOLE.print(message(0))
         elif usr.upper() == "Q":
-            print('Quit!')
             exit()
         elif usr == "":
-            with CONSOLE.status('[bold #FFC0CB]Getting data from random.org', spinner='material') as status:
-                get_random = start()
-                CONSOLE.print(f'[bold blue]\nResult:[/]\n\n[green]{get_random}')
+            with CONSOLE.status('[bold #FFC0CB]Getting data from random.org', spinner='dots2', speed=3.0):
+                get_random = generate_random()
+                CONSOLE.print(f'[bold cyan]RESULT:\n[yellow]{get_random}')
         else:
-            CONSOLE.print(f'[bold #ED0800]{message(3)}[/]', message(0), style='#F4A460')
+            CONSOLE.print(message(3), style='red')
+            CONSOLE.print(message(0), style='#F4A460')
     else:
-        usr = int(input(string))
+        usr = int(input(f'{string}: '))
         return usr
 
 
 def write_settings():
-    default = [TYPE[0], 1, 1, 100, 1, 10]
-    with open('settings.txt', mode='w', encoding='utf-8') as file:
+    default = {
+            'Config': {
+                'Type': TYPE[0], 'Count': 1, 'Min': 1,
+                'Max': 100, 'Column': 1, 'Base': 10
+                }
+            }
+    with open(DIR.parent / 'config.yaml', 'w') as file:
         try:
-            types = usr_in('Type: ')
+            types = usr_in('Type')
+            params = {'Config': {'Type': TYPE[types]}}
             if types == 0:
                 prompts = [
-                'Count: ', 'Min: ', 'Max: ',
-                'Column: ', 'Base (2 8 10 16): '
+                'Count', 'Min', 'Max',
+                'Column', 'Base'
                 ]
-                params = [TYPE[types]]
                 for i in prompts:
-                    params.append(usr_in(i))
-                file.writelines(f'{i}\n' for i in params)
+                    params['Config'][i] = usr_in(i)
+                yaml.dump(params, file, sort_keys=False)
             elif types == 1:
-                prompts = ['Min: ', 'Max: ','Column: ']
-                params = [TYPE[types]]
+                prompts = ['Min', 'Max','Column']
                 for i in prompts:
-                    params.append(usr_in(i))
-                file.writelines(f'{i}\n' for i in params)
+                    params['Config'][i] = usr_in(i)
+                yaml.dump(params, file, sort_keys=False)
             elif types == 2:
                 prompts = [
-                'Count: ', 'Length: ',
-                'Min: ', 'Max: '
+                'Count', 'Length',
+                'Min', 'Max'
                 ]
-                params = [TYPE[types]]
                 for i in prompts:
-                    params.append(usr_in(i))
-                file.writelines(f'{i}\n' for i in params)
+                    params['Config'][i] = usr_in(i)
+                yaml.dump(params, file, sort_keys=False)
             else:
-                file.writelines(f'{i}\n' for i in default)
-                CONSOLE.print('[bold #ED0800]Type out of range![/]\n', message(0), style='#F4A460')
+                yaml.dump(default, file, sort_keys=False)
+                CONSOLE.print(f'[bold red]Type out of range!\n', message(0))
         except Exception as e:
-            file.writelines(f'{i}\n' for i in default)
+            yaml.dump(default, file, sort_keys=False)
             clear_terminal()
             CONSOLE.print(message(2, e, default), style='#FFE900')
 
 
 def read_settings():
     try:
-        with open('settings.txt', mode='r', encoding='utf-8') as file:
-            lines = file.readlines()
-            ris = []
-            for line in lines:
-                ris.append(line.rstrip('\n'))
-            if ris is None or len(ris) == 0:
-                write_settings()
-            elif ris[0] == '':
-                write_settings()
-            else:
-                return ris
-    except FileNotFoundError:
+        with open(DIR.parent / 'config.yaml') as file:
+            data = yaml.safe_load(file)
+            return list(data['Config'].values())
+    except (FileNotFoundError, KeyError, yaml.error.YAMLError):
         write_settings()
 
 
-def start():
+def generate_random():
     p = read_settings()
     try:
         if p[0] == 'integers':
@@ -186,12 +184,11 @@ def start():
             return setsr
     except Exception as e:
         CONSOLE.print(message(1, e), style='red')
-        write_settings()
-        return 'please hit enter again'
+        exit()
 
 
 while __name__ == '__main__':
     read_settings()
     rs = read_settings()
-    usr_in(f'\nRANDOM-ORG-CLI {rs[0]} >>> ', False)
+    usr_in(f'\nRANDOM \033[1;33m{rs[0].upper()} \033[1;37m>>> ', False)
 
