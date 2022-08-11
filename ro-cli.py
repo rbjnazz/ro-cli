@@ -8,7 +8,7 @@ from rich.console import Console
 from rich.panel import Panel
 
 
-TYPE = ['integers', 'sequences', 'integer-sets']
+TYPE = ('integers', 'sequences', 'integer-sets')
 CONSOLE = Console()
 DIR = Path(__file__)
 
@@ -42,14 +42,17 @@ def message(msg=None, error=None, default=None):
     Base - 2 Binary, 8 Octal, 10 Decimal, 16 Hexadecimal
     '''
     err1 = 'Invalid character!\n'
-    err2 = 'Some error occured!\nTry different configuration \
-            or use valid base number [2|8|10|16].\n'
-    defaults = (f'{error}\nPress H for help...\n\n'
+    err2 = ('Some error occured!\nMaybe the configuration '
+            'is empty or the base number is invalid.\n'
+            'Use a valid base number [2|8|10|16].\n'
+            'Run again the program, type "S" '
+            'and set a proper configuration.\n')
+    defaults = (f'{str(error).upper()}\nPress H for help...\n\n'
                 'Default configuration will be used:\n')
     if msg == 0:
         return Panel.fit(help_msg, title='HELP', style='#F4A460', padding=2)
     elif msg == 1:
-        return Panel.fit(f'{err2} {error}', title='ERROR!', padding=2)
+        return Panel.fit(f'{err2}Python -> {error}', title='ERROR!', padding=2)
     elif msg == 2:
         defaults += yaml.dump(default, sort_keys=False)
         return Panel.fit(defaults, title='Default Settings', padding=2)
@@ -83,8 +86,8 @@ class Parser:
 
 
 def rand_int(types, a, b, c, d, e):
-    url = f'{types}/?num={a}&min={b}&max={c}' \
-            f'&col={d}&base={e}&format=html&rnd=new'
+    url = (f'{types}/?num={a}&min={b}&max={c}'
+           f'&col={d}&base={e}&format=html&rnd=new')
     result = Parser(url).parse('pre')
     return result
 
@@ -96,8 +99,8 @@ def rand_seq(types, a, b, c):
 
 
 def rand_sets(types, a, b, c, d):
-    url = f'{types}/?sets={a}&num={b}&min={c}&max={d}' \
-            '&seqnos=on&sort=on&order=index&format=html&rnd=new'
+    url = (f'{types}/?sets={a}&num={b}&min={c}&max={d}'
+           '&seqnos=on&sort=on&order=index&format=html&rnd=new')
     result = Parser(url, True).parse('ul.data')
     return result
 
@@ -169,11 +172,17 @@ def write_settings():
 
 
 def read_settings():
+    errors = (KeyError, yaml.error.YAMLError, TypeError)
     try:
         with open(DIR.parent / 'config.yaml') as file:
             data = yaml.safe_load(file)
             return list(data['Config'].values())
-    except (FileNotFoundError, KeyError, yaml.error.YAMLError):
+    except FileNotFoundError:
+        CONSOLE.print(message(0), style='#F4A460')
+        CONSOLE.print('[b green]Initialize config...\n')
+        write_settings()
+    except errors as e:
+        CONSOLE.print(message(1, e), style='red')
         write_settings()
 
 
@@ -197,5 +206,5 @@ def generate_random():
 while __name__ == '__main__':
     read_settings()
     rs = read_settings()
-    CONSOLE.print(f'\n[b cyan]RANDOM[/] [b yellow]{rs[0].upper()}', end='')
-    usr_in(': ', False)
+    CONSOLE.print(f'\n[b cyan]RANDOM[/] [b yellow]{rs[0].upper()} ', end='')
+    usr_in(u'\u21b2 ', False)
